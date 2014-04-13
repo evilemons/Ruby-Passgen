@@ -2,8 +2,9 @@
 
 class Password_Generator
 	def initialize length
-		@@letters = ('a'..'z').to_a
-		@@all = @@letters + (1..9).to_a
+		@@letters = ('a'..'z').to_a + ('A'..'Z').to_a
+		@@specials = %w(` ~ @ # $ % ^ & * ( ) _ + { } | : ; [ ] \ ' " , < > . / ?)
+		@@all = @@letters + (1..9).to_a + @@specials
 		@length = length
 	end
 
@@ -12,17 +13,23 @@ class Password_Generator
 	end
 
 	def rand_let
-		@@letters[rand(@@letters.length)]
+		@@letters[rand @@letters.length]
 	end
 
-	def make
+	def rand_spec
+		@@specials[rand @@specials.length]
+	end
+
+	def make_complex
 		password = Array.new
 		@length.times do 
-			let = rand(0..1)
+			let = rand(0..2)
 			if let == 1
 				password.push self.rand_let
-			else
+			elsif let == 2
 				password.push self.rand_num
+			else
+				password.push self.rand_spec
 			end
 		end
 		password.join
@@ -33,7 +40,6 @@ end
 if __FILE__ == $0
 
 my_pass = Password_Generator.new ARGV[0].to_i
-p = my_pass.make
-puts p
+puts my_pass.make_complex
 
 end
