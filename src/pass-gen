@@ -1,0 +1,78 @@
+#!/usr/bin/env ruby
+
+#require("arg-parser")
+require_relative("../../Arg_Parser/lib/arg-parser.rb")
+require_relative("../lib/password-generator.rb")
+
+def print_usage
+	print <<-eof
+usage: pass-gen [--length] [--numbers] [--letters] [--upper] [--specials]
+[--spacing <number>] [--joiner <string>]
+	eof
+end
+
+def print_help
+	print_usage
+	print <<-eof
+	
+Options:
+  --length    Needed, specifies the length of the password, not including spacing
+  --numbers   Password will contain numbers 0-9
+  --letters   Password will contain letters a-z
+  --upper     Password will contain uppercase letters A-Z
+  --specials  Password will contain special charecters such as '/' or '&'
+  --spacing <number> Contains an number argument; password charecters will be seperated by the --joiner string
+  --joiner <string> A string that will appear after every value of the --spaceing
+	eof
+	exit(0)
+end
+
+if ARGV.count == 0
+	print_usage
+	exit -1
+end
+
+argv = ArgParser.new ARGV
+
+print_help if argv.option_exist? "--help"
+unless argv.option_exist? "--length"
+	puts "Need --length <number>"
+	print_help
+end
+
+arguments = {}
+
+argv.arg_for_option "--length" do |arg, error|
+	if error
+
+		exit(-1)
+	end
+	$pass = Password_Generator.new arg.to_i
+end
+
+arguments[:numbers]  = true if argv.option_exist? "--numbers" 
+arguments[:letters]  = true if argv.option_exist? "--letters"
+arguments[:upper]    = true if argv.option_exist? "--upper"
+arguments[:specials] = true if argv.option_exist? "--specials"
+
+argv.arg_for_option "--spacing" do |arg, error|
+	if error
+			puts error.object
+			puts error.message
+		exit -1
+	end
+	arguments[:spacing] = arg.to_i if arg
+
+end
+
+argv.arg_for_option "--joiner" do |arg, error|
+	if error
+		puts error.object
+		puts error.message
+		exit -1
+	end
+	arguments[:joiner] = arg if arg
+
+end
+
+puts $pass.make_custom arguments

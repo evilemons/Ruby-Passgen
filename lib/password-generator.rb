@@ -1,17 +1,18 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 
 class Password_Generator
+	@@letters = ('a'..'z').to_a 
+	@@upper = ('A'..'Z').to_a
+	@@numbers = (0..9).to_a
+	@@specials = %w(` ~ @ # $ % ^ & * ( ) _ + { } | : ; [ ] \ ' " , < > . / ?)
+	@@all = @@letters + (0..9).to_a + @@specials
+
 	def initialize length
-		@@letters = ('a'..'z').to_a 
-		@@upper = ('A'..'Z').to_a
-		@@numbers = (0..9).to_a
-		@@specials = %w(` ~ @ # $ % ^ & * ( ) _ + { } | : ; [ ] \ ' " , < > . / ?)
-		@@all = @@letters + (1..9).to_a + @@specials
 		@length = length
 	end
 
 	def rand_num
-		rand 9
+		rand (0..9)
 	end
 
 	def rand_let
@@ -23,18 +24,7 @@ class Password_Generator
 	end
 
 	def make_complex
-		password = []
-		@length.times do 
-			let = rand(0..2)
-			if let == 1
-				password.push self.rand_let
-			elsif let == 2
-				password.push self.rand_num
-			else
-				password.push self.rand_spec
-			end
-		end
-		password.join
+		self.make_custom({letters: true, numbers: true, upper: true, specials: true})
 	end
 
 	def make_simple
@@ -49,17 +39,22 @@ class Password_Generator
 		joiner       = args[:joiner]   #char
 		spacing      = args[:spacing]  #int
 
+		if joiner
+			unless spacing
+				puts "Need spacing"
+				exit -1
+			end
+		end
+		if spacing
+			unless joiner
+				puts "Need joiner"
+				exit -1
+			end
+		end
+
 		password = []
 		chars = []
 
-		if joiner && !spacing
-			puts "Need spacing."
-			exit(-1)
-		end
-		if !joiner && spacing
-			puts "Need joiner."
-			exit(-1)
-		end
 		if want_number
 			chars += @@numbers
 		end
@@ -76,8 +71,7 @@ class Password_Generator
 		if spacing
 			@length -= @length % spacing
 			@length /= spacing
-			@length.times do |i|
-				i += 1
+			@length.times do 
 				spacing.times do
 					password.push chars[rand chars.length]
 				end
@@ -86,7 +80,11 @@ class Password_Generator
 			password.pop
 		else
 			@length.times do
-				password.push chars[rand chars.length]
+				if chars.count == 0
+					password.push @@all[rand @@all.length]
+				else
+					password.push chars[rand chars.length]
+				end
 			end
 		end
 		password.join
@@ -97,6 +95,7 @@ end
 if __FILE__ == $0
 
 	my_pass = Password_Generator.new ARGV[0].to_i
-	puts my_pass.make_custom({numbers: true, letters: true, spacing:4, joiner:','})
+	#puts my_pass.make_custom({numbers: false, letters: true, upper: false, spacing: 3, joiner: '-'})
+	puts my_pass.make_complex
 
 end
