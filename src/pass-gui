@@ -1,0 +1,73 @@
+#!/usr/bin/env ruby
+
+require 'gtk2'
+require_relative '../lib/password-generator.rb'
+#require 'passgen'
+
+class App < Gtk::Window
+	def initialize
+		super
+
+		fixed = Gtk::Fixed.new
+		add fixed
+
+		@numbers = Gtk::CheckButton.new "numbers"
+		@numbers.set_active false
+		@numbers.set_can_focus false
+		fixed.put @numbers, 1, 1
+
+		@letters = Gtk::CheckButton.new "letters"
+		@letters.set_active true
+		@letters.set_can_focus false
+		fixed.put @letters, 1, 20
+
+		@upper = Gtk::CheckButton.new "upper"
+		@upper.set_active false
+		@upper.set_can_focus false
+		fixed.put @upper, 1, 40
+
+		@specials = Gtk::CheckButton.new "specials"
+		@specials.set_active false
+		@specials.set_can_focus false
+		fixed.put @specials, 1, 60
+
+		@length = Gtk::Entry.new 
+		fixed.put @length, 130, 1
+
+		@spacing = Gtk::Entry.new
+		fixed.put @spacing, 130, 30
+
+		@joiner = Gtk::Entry.new
+		fixed.put @joiner, 130, 59
+
+		@make = Gtk::Button.new "make"
+		@make.set_size_request 80, 35
+		@make.signal_connect "clicked" do
+			self.make
+		end
+		fixed.put @make, 219, 264
+
+		@result = Gtk::Entry.new
+		@result.editable = false
+		fixed.put @result, 130, 119
+
+		set_title "Pass-Gen"
+		signal_connect "destroy" do
+			Gtk.main_quit
+		end
+		set_default_size 300, 300
+		set_window_position :center
+
+		show_all
+	end
+
+	def make
+		arguments = {numbers: @numbers.active?, letters: @letters.active?, upper: @upper.active?, specials: @specials.active?, spacing: @spacing.text.to_i, joiner: @joiner.text}
+		p = Password_Generator.new @length.text.to_i
+		@result.set_text p.make_custom arguments
+	end
+end
+
+Gtk.init
+	window = App.new
+Gtk.main
